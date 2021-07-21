@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, {
   useRef,
   useLayoutEffect,
@@ -32,7 +33,7 @@ export const Popover = forwardRef<HTMLElement, PopoverProps>(
       align = Constants.DEFAULT_ALIGN,
       padding = 0,
       reposition = true,
-      containerParent = window.document.body,
+      containerParent,
       containerClassName = 'react-tiny-popover-container',
       containerStyle,
       contentLocation,
@@ -41,6 +42,15 @@ export const Popover = forwardRef<HTMLElement, PopoverProps>(
     },
     externalRef,
   ) => {
+    if (typeof window === 'undefined') {
+      // server side rendering
+      return <>{children}</>;
+    }
+
+    if (!containerParent) {
+      containerParent = window.document.body;
+    }
+
     const positions = useMemoizedArray(externalPositions);
 
     // TODO: factor prevs out into a custom prevs hook
@@ -179,7 +189,7 @@ export const Popover = forwardRef<HTMLElement, PopoverProps>(
     );
 
     const handleWindowResize = useCallback(() => {
-      window.requestAnimationFrame(() => positionPopover());
+      window.requestAnimationFrame(positionPopover);
     }, [positionPopover]);
 
     useEffect(() => {
